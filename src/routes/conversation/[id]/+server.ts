@@ -405,48 +405,56 @@ export async function POST({ request, locals, params, getClientAddress }) {
 
 			try {
 				const endpoint = await model.getEndpoint();
-				for await (const output of await endpoint({
+				const output = await endpoint({
 					messages: processedMessages,
 					preprompt,
 					continueMessage: isContinue,
-				})) {
-					// if not generated_text is here it means the generation is not done
-					if (!output.generated_text) {
-						// else we get the next token
-						if (!output.token.special) {
-							update({
-								type: "stream",
-								token: output.token.text,
-							});
-							// abort check
-							const date = abortedGenerations.get(convId.toString());
-							if (date && date > promptedAt) {
-								break;
-							}
-							// no output check
-							if (!output) {
-								break;
-							}
+				});
+				messageToWriteTo.content = previousText + output.generated_text;
+				messageToWriteTo.updatedAt = new Date();
 
-							// otherwise we just concatenate tokens
-							messageToWriteTo.content += output.token.text;
-						}
-					} else {
-						messageToWriteTo.interrupted = !output.token.special;
-						// add output.generated text to the last message
-						// strip end tokens from the output.generated_text
-						const text = (model.parameters.stop ?? []).reduce((acc: string, curr: string) => {
-							if (acc.endsWith(curr)) {
-								messageToWriteTo.interrupted = false;
-								return acc.slice(0, acc.length - curr.length);
-							}
-							return acc;
-						}, output.generated_text.trimEnd());
+				// for await (const output of await endpoint({
+				// 	messages: processedMessages,
+				// 	preprompt: conv.preprompt,
+				// 	continueMessage: isContinue,
+				// })) {
+				// 	// if not generated_text is here it means the generation is not done
+				// 	if (!output.generated_text) {
+				// 		// else we get the next token
+				// 		if (!output.token.special) {
+				// 			update({
+				// 				type: "stream",
+				// 				token: output.token.text,
+				// 			});
+				// 			// abort check
+				// 			const date = abortedGenerations.get(convId.toString());
+				// 			if (date && date > promptedAt) {
+				// 				break;
+				// 			}
+				// 			// no output check
+				// 			if (!output) {
+				// 				break;
+				// 			}
 
-						messageToWriteTo.content = previousText + text;
-						messageToWriteTo.updatedAt = new Date();
-					}
-				}
+				// 			// otherwise we just concatenate tokens
+				// 			messageToWriteTo.content += output.token.text;
+				// 		}
+				// 	} else {
+				// 		messageToWriteTo.interrupted = !output.token.special;
+				// 		// add output.generated text to the last message
+				// 		// strip end tokens from the output.generated_text
+				// 		const text = (model.parameters.stop ?? []).reduce((acc: string, curr: string) => {
+				// 			if (acc.endsWith(curr)) {
+				// 				messageToWriteTo.interrupted = false;
+				// 				return acc.slice(0, acc.length - curr.length);
+				// 			}
+				// 			return acc;
+				// 		}, output.generated_text.trimEnd());
+
+				// 		messageToWriteTo.content = previousText + text;
+				// 		messageToWriteTo.updatedAt = new Date();
+				// 	}
+				// }
 			} catch (e) {
 				update({ type: "status", status: "error", message: (e as Error).message });
 			} finally {
