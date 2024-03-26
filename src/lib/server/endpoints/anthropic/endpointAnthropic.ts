@@ -13,83 +13,82 @@ export const endpointAnthropicParametersSchema = z.object({
 	defaultQuery: z.record(z.string()).optional(),
 });
 
-export async function endpointAnthropic(
-	input: z.input<typeof endpointAnthropicParametersSchema>
-): Promise<Endpoint> {
-	const { baseURL, apiKey, model, defaultHeaders, defaultQuery } =
-		endpointAnthropicParametersSchema.parse(input);
-	let Anthropic;
-	try {
-		Anthropic = (await import("@anthropic-ai/sdk")).default;
-	} catch (e) {
-		throw new Error("Failed to import @anthropic-ai/sdk", { cause: e });
-	}
+export async function endpointAnthropic() {
+	return null;
+	// const { baseURL, apiKey, model, defaultHeaders, defaultQuery } =
+	// 	endpointAnthropicParametersSchema.parse(input);
+	// let Anthropic;
+	// try {
+	// 	Anthropic = (await import("@anthropic-ai/sdk")).default;
+	// } catch (e) {
+	// 	throw new Error("Failed to import @anthropic-ai/sdk", { cause: e });
+	// }
 
-	const anthropic = new Anthropic({
-		apiKey,
-		baseURL,
-		defaultHeaders,
-		defaultQuery,
-	});
+	// const anthropic = new Anthropic({
+	// 	apiKey,
+	// 	baseURL,
+	// 	defaultHeaders,
+	// 	defaultQuery,
+	// });
 
-	return async ({ messages, preprompt }) => {
-		let system = preprompt;
-		if (messages?.[0]?.from === "system") {
-			system = messages[0].content;
-		}
+	// return async ({ messages, preprompt }) => {
+	// 	let system = preprompt;
+	// 	if (messages?.[0]?.from === "system") {
+	// 		system = messages[0].content;
+	// 	}
 
-		const messagesFormatted = messages
-			.filter((message) => message.from !== "system")
-			.map((message) => ({
-				role: message.from,
-				content: message.content,
-			})) as unknown as {
-			role: "user" | "assistant";
-			content: string;
-		}[];
+	// 	const messagesFormatted = messages
+	// 		.filter((message) => message.from !== "system")
+	// 		.map((message) => ({
+	// 			role: message.from,
+	// 			content: message.content,
+	// 		})) as unknown as {
+	// 		role: "user" | "assistant";
+	// 		content: string;
+	// 	}[];
 
-		let tokenId = 0;
-		return (async function* () {
-			const stream = anthropic.messages.stream({
-				model: model.id ?? model.name,
-				messages: messagesFormatted,
-				max_tokens: model.parameters?.max_new_tokens,
-				temperature: model.parameters?.temperature,
-				top_p: model.parameters?.top_p,
-				top_k: model.parameters?.top_k,
-				stop_sequences: model.parameters?.stop,
-				system,
-			});
-			while (true) {
-				const result = await Promise.race([stream.emitted("text"), stream.emitted("end")]);
+	// 	let tokenId = 0;
+	// 	return (async function* () {
+	// 		const stream = anthropic.messages.stream({
+	// 			model: model.id ?? model.name,
+	// 			messages: messagesFormatted,
+	// 			max_tokens: model.parameters?.max_new_tokens,
+	// 			temperature: model.parameters?.temperature,
+	// 			top_p: model.parameters?.top_p,
+	// 			top_k: model.parameters?.top_k,
+	// 			stop_sequences: model.parameters?.stop,
+	// 			system,
+	// 		});
+	// 		while (true) {
+	// 			const result = await Promise.race([stream.emitted("text"), stream.emitted("end")]);
 
-				// Stream end
-				if (result === undefined) {
-					yield {
-						token: {
-							id: tokenId++,
-							text: "",
-							logprob: 0,
-							special: true,
-						},
-						generated_text: await stream.finalText(),
-						details: null,
-					} satisfies TextGenerationStreamOutput;
-					return;
-				}
+	// 			// Stream end
+	// 			if (result === undefined) {
+	// 				yield {
+	// 					token: {
+	// 						id: tokenId++,
+	// 						text: "",
+	// 						logprob: 0,
+	// 						special: true,
+	// 					},
+	// 					generated_text: await stream.finalText(),
+	// 					details: null,
+	// 				} satisfies TextGenerationStreamOutput;
+	// 				return;
+	// 			}
 
-				// Text delta
-				yield {
-					token: {
-						id: tokenId++,
-						text: result as unknown as string,
-						special: false,
-						logprob: 0,
-					},
-					generated_text: null,
-					details: null,
-				} satisfies TextGenerationStreamOutput;
-			}
-		})();
-	};
+	// 			// Text delta
+	// 			yield {
+	// 				token: {
+	// 					id: tokenId++,
+	// 					text: result as unknown as string,
+	// 					special: false,
+	// 					logprob: 0,
+	// 				},
+	// 				generated_text: null,
+	// 				details: null,
+	// 			} satisfies TextGenerationStreamOutput;
+	// 		}
+	// 	})();
+	// };
 }
