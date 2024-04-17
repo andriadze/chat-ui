@@ -456,6 +456,7 @@ export async function POST({ request, locals, params, getClientAddress }) {
 				// 	}
 				// }
 			} catch (e) {
+				console.log("Err", e);
 				update({ type: "status", status: "error", message: (e as Error).message });
 			} finally {
 				// check if no output was generated

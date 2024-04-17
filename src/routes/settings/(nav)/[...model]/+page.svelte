@@ -8,6 +8,8 @@
 	import TokensCounter from "$lib/components/TokensCounter.svelte";
 	import CarbonArrowUpRight from "~icons/carbon/arrow-up-right";
 	import CarbonLink from "~icons/carbon/link";
+	import { DEFAULT_SYSTEM_PROMPT } from "$lib/constants/defaultSystemPrompt";
+	import { DEFAULT_GREETING } from "$lib/constants/defaultGreeting";
 
 	const settings = useSettingsStore();
 
@@ -15,7 +17,15 @@
 		$settings.customPrompts = {
 			...$settings.customPrompts,
 			[$page.params.model]:
-				$page.data.models.find((el: BackendModel) => el.id === $page.params.model)?.preprompt || "",
+				$page.data.models.find((el: BackendModel) => el.id === $page.params.model)?.preprompt ||
+				DEFAULT_SYSTEM_PROMPT,
+		};
+	}
+
+	$: if ($settings.greeting[$page.params.model] === undefined) {
+		$settings.greeting = {
+			...$settings.greeting,
+			[$page.params.model]: DEFAULT_GREETING,
 		};
 	}
 
@@ -101,6 +111,15 @@
 	</button>
 
 	<div class="relative flex w-full flex-col gap-2">
+		<div class="flex w-full flex-row content-between">
+			<h3 class="mb-1.5 text-lg font-semibold text-gray-800">Greeting message</h3>
+		</div>
+		<textarea
+			rows="3"
+			class="w-full resize-none rounded-md border-2 bg-gray-100 p-2"
+			bind:value={$settings.greeting[$page.params.model]}
+		/>
+
 		<div class="flex w-full flex-row content-between">
 			<h3 class="mb-1.5 text-lg font-semibold text-gray-800">System Prompt</h3>
 			{#if hasCustomPreprompt}

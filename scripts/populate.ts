@@ -143,6 +143,8 @@ async function seed() {
 				createdAt: faker.date.recent({ days: 30 }),
 				updatedAt: faker.date.recent({ days: 30 }),
 				customPrompts: {},
+				userInfo: {},
+				characters: {},
 				assistants: [],
 			};
 			await collections.settings.updateOne(

@@ -151,6 +151,9 @@ export const load: LayoutServerLoad = async ({ locals, depends }) => {
 				settings?.shareConversationsWithModelAuthors ??
 				DEFAULT_SETTINGS.shareConversationsWithModelAuthors,
 			customPrompts: settings?.customPrompts ?? {},
+			greeting: settings?.greeting ?? {},
+			characters: settings?.characters ?? DEFAULT_SETTINGS.characters,
+			userInfo: settings?.userInfo ?? DEFAULT_SETTINGS.userInfo,
 			assistants: userAssistants,
 		},
 		models: models.map((model) => ({

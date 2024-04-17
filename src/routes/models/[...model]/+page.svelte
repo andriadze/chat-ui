@@ -9,6 +9,7 @@
 	import { useSettingsStore } from "$lib/stores/settings";
 	import { ERROR_MESSAGES, error } from "$lib/stores/errors";
 	import { pendingMessage } from "$lib/stores/pendingMessage";
+	import { buildSystemMessage } from "$lib/utils/buildSystemMessage.js";
 
 	export let data;
 
@@ -44,7 +45,16 @@
 				},
 				body: JSON.stringify({
 					model,
-					preprompt: $settings.customPrompts[$settings.activeModel],
+					greeting: buildSystemMessage(
+						$settings.greeting[$settings.activeModel],
+						$settings.characters.default,
+						$settings.userInfo
+					),
+					preprompt: buildSystemMessage(
+						$settings.customPrompts[$settings.activeModel],
+						$settings.characters.default,
+						$settings.userInfo
+					),
 				}),
 			});
 

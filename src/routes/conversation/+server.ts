@@ -22,6 +22,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 			model: validateModel(models),
 			assistantId: z.string().optional(),
 			preprompt: z.string().optional(),
+			greeting: z.string().optional(),
 		})
 		.safeParse(JSON.parse(body));
 
@@ -50,6 +51,15 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 			id: v4(),
 			from: "system",
 			content: values.preprompt ?? "",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			children: [],
+			ancestors: [],
+		},
+		{
+			id: v4(),
+			from: "assistant",
+			content: values.greeting ?? "",
 			createdAt: new Date(),
 			updatedAt: new Date(),
 			children: [],

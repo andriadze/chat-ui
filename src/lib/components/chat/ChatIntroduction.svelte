@@ -12,6 +12,7 @@
 	import { base } from "$app/paths";
 	import { useSettingsStore } from "$lib/stores/settings";
 	import JSON5 from "json5";
+	import { buildSystemMessage } from "$lib/utils/buildSystemMessage";
 
 	export let currentModel: Model;
 	export let models: Model[];
@@ -27,34 +28,26 @@
 	const dispatch = createEventDispatcher<{ message: string }>();
 </script>
 
-<div class="my-auto grid gap-8 lg:grid-cols-3">
-	<div class="lg:col-span-1">
+<div class="my-auto grid gap-5 lg:grid-cols-3">
+	<div class="lg:col-span-2">
 		<div>
-			<div class="mb-3 flex items-center text-2xl font-semibold">
+			<div class="mb-3 flex items-center text-2xl">
 				<Logo classNames="mr-1 flex-none" />
-				{PUBLIC_APP_NAME}
-				<div
-					class="ml-3 flex h-6 items-center rounded-lg border border-gray-100 bg-gray-50 px-2 text-base text-gray-400 dark:border-gray-700/60 dark:bg-gray-800"
-				>
-					v{PUBLIC_VERSION}
-				</div>
+				You're chatting with:
+			</div>
+			<div class="mb-3 flex items-center text-xl font-semibold">
+				{$settings.characters.default.char_name}
 			</div>
 			<p class="text-base text-gray-600 dark:text-gray-400">
-				{PUBLIC_APP_DESCRIPTION ||
-					"Making the community's best AI chat models available to everyone."}
+				{buildSystemMessage(
+					$settings.greeting[$settings.activeModel],
+					$settings.characters.default,
+					$settings.userInfo
+				)}
 			</p>
 		</div>
 	</div>
-	<div class="lg:col-span-2 lg:pl-24">
-		{#each announcementBanners as banner}
-			<AnnouncementBanner classNames="mb-4" title={banner.title}>
-				<a
-					target="_blank"
-					href={banner.linkHref}
-					class="mr-2 flex items-center underline hover:no-underline">{banner.linkTitle}</a
-				>
-			</AnnouncementBanner>
-		{/each}
+	<div class="lg:col-span-1 lg:pl-24">
 		<div class="overflow-hidden rounded-xl border dark:border-gray-800">
 			<div class="flex p-3">
 				<div>

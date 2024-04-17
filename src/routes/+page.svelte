@@ -6,6 +6,7 @@
 	import { ERROR_MESSAGES, error } from "$lib/stores/errors";
 	import { pendingMessage } from "$lib/stores/pendingMessage";
 	import { useSettingsStore } from "$lib/stores/settings.js";
+	import { buildSystemMessage } from "$lib/utils/buildSystemMessage.js";
 	import { findCurrentModel } from "$lib/utils/models";
 
 	export let data;
@@ -41,7 +42,16 @@
 				},
 				body: JSON.stringify({
 					model,
-					preprompt: $settings.customPrompts[$settings.activeModel],
+					greeting: buildSystemMessage(
+						$settings.greeting[$settings.activeModel],
+						$settings.characters.default,
+						$settings.userInfo
+					),
+					preprompt: buildSystemMessage(
+						$settings.customPrompts[$settings.activeModel],
+						$settings.characters.default,
+						$settings.userInfo
+					),
 					assistantId: data.assistant?._id,
 				}),
 			});

@@ -118,6 +118,14 @@
 			</a>
 		{/if}
 
+		<h3 class="pb-3 pl-3 pt-2 text-[.8rem] text-gray-800 sm:pl-1">Characters</h3>
+		<a
+			href="{base}/settings/chars"
+			class="group flex h-10 flex-none items-center gap-2 pl-3 pr-2 text-sm text-gray-500 hover:bg-gray-100 md:rounded-xl"
+			><CarbonArrowUpRight class="mr-1.5 shrink-0 text-xs " />
+			<div class="truncate">default</div>
+		</a>
+
 		<a
 			href="{base}/settings"
 			class="group mt-auto flex h-10 flex-none items-center gap-2 pl-3 pr-2 text-sm text-gray-500 hover:bg-gray-100 max-md:order-first md:rounded-xl
