@@ -58,6 +58,15 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		},
 		{
 			id: v4(),
+			from: "user",
+			content: "Hi",
+			createdAt: new Date(),
+			updatedAt: new Date(),
+			children: [],
+			ancestors: [],
+		},
+		{
+			id: v4(),
 			from: "assistant",
 			content: values.greeting ?? "",
 			createdAt: new Date(),
@@ -105,6 +114,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		values.preprompt ??= model?.preprompt ?? "";
 	}
 
+	console.log("INSERTING MESSAGES", messages);
 	const res = await collections.conversations.insertOne({
 		_id: new ObjectId(),
 		title: title || "New Chat",

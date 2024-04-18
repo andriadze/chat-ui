@@ -146,6 +146,32 @@
 			} else {
 				// just a normal linear conversation, so we add the user message
 				// and the blank assistant message back to back
+				const first = addChildren(
+					{
+						messages,
+						rootMessageId: data.rootMessageId,
+					},
+					{
+						from: "user",
+						content: "",
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+					messageId
+				);
+				const parent = addChildren(
+					{
+						messages,
+						rootMessageId: data.rootMessageId,
+					},
+					{
+						from: "assistant",
+						content: messages[2]?.content,
+						createdAt: new Date(),
+						updatedAt: new Date(),
+					},
+					first
+				);
 				const newUserMessageId = addChildren(
 					{
 						messages,
@@ -158,7 +184,7 @@
 						createdAt: new Date(),
 						updatedAt: new Date(),
 					},
-					messageId
+					parent
 				);
 
 				if (!data.rootMessageId) {

@@ -230,6 +230,18 @@ export async function POST({ request, locals, params, getClientAddress }) {
 	} else {
 		// just a normal linear conversation, so we add the user message
 		// and the blank assistant message back to back
+		const greetindId = addChildren(
+			conv,
+			{
+				from: "assistant",
+				content: conv.messages?.[2]?.content ?? "",
+				files: hashes,
+				createdAt: new Date(),
+				updatedAt: new Date(),
+			},
+			messageId
+		);
+
 		const newUserMessageId = addChildren(
 			conv,
 			{
@@ -239,7 +251,7 @@ export async function POST({ request, locals, params, getClientAddress }) {
 				createdAt: new Date(),
 				updatedAt: new Date(),
 			},
-			messageId
+			greetindId
 		);
 
 		messageToWriteToId = addChildren(
@@ -303,7 +315,7 @@ export async function POST({ request, locals, params, getClientAddress }) {
 			update({ type: "status", status: "started" });
 
 			const summarizeIfNeeded = (async () => {
-				if (conv.title === "New Chat" && conv.messages.length === 3) {
+				if (conv.title === "New Chat" && conv.messages.length === 4) {
 					try {
 						conv.title = (await summarize(conv.messages[1].content)) ?? conv.title;
 						update({ type: "status", status: "title", message: conv.title });
@@ -394,6 +406,7 @@ export async function POST({ request, locals, params, getClientAddress }) {
 			}
 
 			// inject websearch result & optionally images into the messages
+			console.log("MESSAGES FOR PROMPT", messagesForPrompt);
 			const processedMessages = await preprocessMessages(
 				messagesForPrompt,
 				messageToWriteTo.webSearch,
