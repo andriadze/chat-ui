@@ -230,17 +230,21 @@ export async function POST({ request, locals, params, getClientAddress }) {
 	} else {
 		// just a normal linear conversation, so we add the user message
 		// and the blank assistant message back to back
-		const greetindId = addChildren(
-			conv,
-			{
-				from: "assistant",
-				content: conv.messages?.[2]?.content ?? "",
-				files: hashes,
-				createdAt: new Date(),
-				updatedAt: new Date(),
-			},
-			messageId
-		);
+		let greetindId = messageId;
+
+		if (conv.messages.length === 3) {
+			greetindId = addChildren(
+				conv,
+				{
+					from: "assistant",
+					content: conv.messages?.[2]?.content ?? "",
+					files: hashes,
+					createdAt: new Date(),
+					updatedAt: new Date(),
+				},
+				messageId
+			);
+		}
 
 		const newUserMessageId = addChildren(
 			conv,
@@ -406,7 +410,6 @@ export async function POST({ request, locals, params, getClientAddress }) {
 			}
 
 			// inject websearch result & optionally images into the messages
-			console.log("MESSAGES FOR PROMPT", messagesForPrompt);
 			const processedMessages = await preprocessMessages(
 				messagesForPrompt,
 				messageToWriteTo.webSearch,
