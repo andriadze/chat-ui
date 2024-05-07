@@ -10,12 +10,14 @@ import {
 	endpointAnthropic,
 	endpointAnthropicParametersSchema,
 } from "./anthropic/endpointAnthropic";
+import type { ModelParameters } from "$lib/types/ModelParameters";
 
 // parameters passed when generating text
 export interface EndpointParameters {
 	messages: Omit<Conversation["messages"][0], "id">[];
 	preprompt?: Conversation["preprompt"];
 	continueMessage?: boolean; // used to signal that the last message will be extended
+	parameters?: ModelParameters;
 }
 
 interface CommonEndpoint {

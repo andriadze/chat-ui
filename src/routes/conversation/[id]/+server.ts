@@ -425,6 +425,7 @@ export async function POST({ request, locals, params, getClientAddress }) {
 					messages: processedMessages,
 					preprompt,
 					continueMessage: isContinue,
+					parameters: conv.parameters,
 				});
 				messageToWriteTo.content = previousText + output.generated_text;
 				messageToWriteTo.updatedAt = new Date();

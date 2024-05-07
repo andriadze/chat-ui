@@ -23,6 +23,8 @@ export function compileTemplate<T>(input: string, model: LegacyParamatersTemplat
 	});
 
 	return function render(inputs: T, options?: RuntimeOptions) {
-		return template({ ...model, ...inputs }, options);
+		const res = template({ ...model, ...inputs }, options);
+		console.log(res);
+		return res;
 	};
 }

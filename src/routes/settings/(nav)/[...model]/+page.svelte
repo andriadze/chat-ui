@@ -5,11 +5,14 @@
 	import type { BackendModel } from "$lib/server/models";
 	import { useSettingsStore } from "$lib/stores/settings";
 	import CopyToClipBoardBtn from "$lib/components/CopyToClipBoardBtn.svelte";
-	import TokensCounter from "$lib/components/TokensCounter.svelte";
 	import CarbonArrowUpRight from "~icons/carbon/arrow-up-right";
 	import CarbonLink from "~icons/carbon/link";
 	import { DEFAULT_SYSTEM_PROMPT } from "$lib/constants/defaultSystemPrompt";
 	import { DEFAULT_GREETING } from "$lib/constants/defaultGreeting";
+	// import { MODELS } from "$env/static/private";
+	// import { modelConfig } from "./modelConfic";
+	// import JSON5 from "json5";
+	// import { z } from "zod";
 
 	const settings = useSettingsStore();
 
@@ -22,16 +25,25 @@
 		};
 	}
 
+	$: if ($settings.modelParameters[$page.params.model] === undefined) {
+		console.log(
+			"Page data",
+			$page.data.models.find((el: BackendModel) => el.id === $page.params.model)
+		);
+		$settings.modelParameters = {
+			...$settings.modelParameters,
+			[$page.params.model]:
+				$page.data.models.find((el: BackendModel) => el.id === $page.params.model)?.parameters ||
+				{},
+		};
+	}
+
 	$: if ($settings.greeting[$page.params.model] === undefined) {
 		$settings.greeting = {
 			...$settings.greeting,
 			[$page.params.model]: DEFAULT_GREETING,
 		};
 	}
-
-	$: hasCustomPreprompt =
-		$settings.customPrompts[$page.params.model] !==
-		$page.data.models.find((el: BackendModel) => el.id === $page.params.model)?.preprompt;
 
 	$: isActive = $settings.activeModel === $page.params.model;
 
@@ -109,41 +121,57 @@
 	>
 		{isActive ? "Active model" : "Activate"}
 	</button>
-
-	<div class="relative flex w-full flex-col gap-2">
-		<div class="flex w-full flex-row content-between">
-			<h3 class="mb-1.5 text-lg font-semibold text-gray-800">Greeting message</h3>
-		</div>
-		<textarea
-			rows="3"
-			class="w-full resize-none rounded-md border-2 bg-gray-100 p-2"
-			bind:value={$settings.greeting[$page.params.model]}
-		/>
-
-		<div class="flex w-full flex-row content-between">
-			<h3 class="mb-1.5 text-lg font-semibold text-gray-800">System Prompt</h3>
-			{#if hasCustomPreprompt}
-				<button
-					class="ml-auto underline decoration-gray-300 hover:decoration-gray-700"
-					on:click|stopPropagation={() =>
-						($settings.customPrompts[$page.params.model] = model.preprompt)}
-				>
-					Reset
-				</button>
-			{/if}
-		</div>
-		<textarea
-			rows="10"
-			class="w-full resize-none rounded-md border-2 bg-gray-100 p-2"
-			bind:value={$settings.customPrompts[$page.params.model]}
-		/>
-		{#if model.tokenizer && $settings.customPrompts[$page.params.model]}
-			<TokensCounter
-				classNames="absolute bottom-2 right-2"
-				prompt={$settings.customPrompts[$page.params.model]}
-				modelTokenizer={model.tokenizer}
-				truncate={model?.parameters?.truncate}
-			/>
-		{/if}
+	<div class="flex w-full flex-row content-between">
+		<h3 class="mb-1.5 text-lg font-semibold text-gray-800">temperature</h3>
 	</div>
+	<input
+		type="number"
+		min="0"
+		max="1"
+		bind:value={$settings.modelParameters[$page.params.model].temperature}
+		class="w-full resize-none rounded-md border-2 bg-gray-100 p-2"
+	/>
+	<div class="flex w-full flex-row content-between">
+		<h3 class="mb-1.5 text-lg font-semibold text-gray-800">repetition_penalty</h3>
+	</div>
+	<input
+		type="number"
+		min="-2"
+		max="2"
+		bind:value={$settings.modelParameters[$page.params.model].repetition_penalty}
+		class="w-full resize-none rounded-md border-2 bg-gray-100 p-2"
+	/>
+	<div class="flex w-full flex-row content-between">
+		<h3 class="mb-1.5 text-lg font-semibold text-gray-800">top_p</h3>
+	</div>
+	<input
+		type="number"
+		min="0"
+		bind:value={$settings.modelParameters[$page.params.model].top_p}
+		class="w-full resize-none rounded-md border-2 bg-gray-100 p-2"
+	/>
+	<div class="flex w-full flex-row content-between">
+		<h3 class="mb-1.5 text-lg font-semibold text-gray-800">top_k</h3>
+	</div>
+	<input
+		type="number"
+		min="0"
+		bind:value={$settings.modelParameters[$page.params.model].top_k}
+		class="w-full resize-none rounded-md border-2 bg-gray-100 p-2"
+	/>
+	<div class="flex w-full flex-row content-between">
+		<h3 class="mb-1.5 text-lg font-semibold text-gray-800">max_new_tokens</h3>
+	</div>
+	<input
+		type="number"
+		min="0"
+		bind:value={$settings.modelParameters[$page.params.model].max_new_tokens}
+		class="w-full resize-none rounded-md border-2 bg-gray-100 p-2"
+	/>
+
+	<!-- "temperature": 1,
+      "top_p": 0.95,
+      "repetition_penalty": 1.2,
+      "top_k": 50,
+      "max_new_tokens": 1024 -->
 </div>

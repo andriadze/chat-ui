@@ -26,6 +26,8 @@
 		: [];
 
 	const dispatch = createEventDispatcher<{ message: string }>();
+
+	$: console.log($settings.activeScenario, $settings.scenarios);
 </script>
 
 <div class="my-auto grid gap-5 lg:grid-cols-3">
@@ -40,9 +42,9 @@
 			</div>
 			<p class="text-base text-gray-600 dark:text-gray-400">
 				{buildSystemMessage(
-					$settings.greeting[$settings.activeModel],
-					$settings.characters.default,
-					$settings.userInfo
+					$settings.scenarios?.[$settings.activeScenario]?.greeting,
+					$settings.scenarios?.[$settings.activeScenario]?.character,
+					$settings.scenarios?.[$settings.activeScenario]?.userInfo
 				)}
 			</p>
 		</div>

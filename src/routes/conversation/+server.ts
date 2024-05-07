@@ -23,6 +23,17 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 			assistantId: z.string().optional(),
 			preprompt: z.string().optional(),
 			greeting: z.string().optional(),
+			parameters: z
+				.object({
+					temperature: z.number().min(0).max(1).optional(),
+					truncate: z.number().int().positive().optional(),
+					max_new_tokens: z.number().int().positive().optional(),
+					stop: z.array(z.string()).optional(),
+					top_p: z.number().positive().optional(),
+					top_k: z.number().positive().optional(),
+					repetition_penalty: z.number().min(-2).max(2).optional(),
+				})
+				.optional(),
 		})
 		.safeParse(JSON.parse(body));
 
@@ -114,7 +125,6 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		values.preprompt ??= model?.preprompt ?? "";
 	}
 
-	console.log("INSERTING MESSAGES", messages);
 	const res = await collections.conversations.insertOne({
 		_id: new ObjectId(),
 		title: title || "New Chat",
@@ -122,6 +132,7 @@ export const POST: RequestHandler = async ({ locals, request }) => {
 		messages,
 		model: values.model,
 		preprompt: values.preprompt,
+		parameters: values.parameters,
 		assistantId: values.assistantId ? new ObjectId(values.assistantId) : undefined,
 		createdAt: new Date(),
 		updatedAt: new Date(),

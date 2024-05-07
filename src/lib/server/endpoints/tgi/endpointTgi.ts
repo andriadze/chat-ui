@@ -1,6 +1,6 @@
 import { HF_ACCESS_TOKEN, HF_TOKEN } from "$env/static/private";
 import { buildPrompt } from "$lib/buildPrompt";
-import { textGenerationStream, textGeneration } from "@huggingface/inference";
+import { textGeneration } from "@huggingface/inference";
 import type { Endpoint } from "../endpoints";
 import { z } from "zod";
 
@@ -14,9 +14,9 @@ export const endpointTgiParametersSchema = z.object({
 });
 
 export function endpointTgi(input: z.input<typeof endpointTgiParametersSchema>): Endpoint {
-	const { url, accessToken, model, authorization } = endpointTgiParametersSchema.parse(input);
+	const { url, accessToken, model } = endpointTgiParametersSchema.parse(input);
 
-	return async ({ messages, preprompt, continueMessage }) => {
+	return async ({ messages, preprompt, continueMessage, parameters }) => {
 		const prompt = await buildPrompt({
 			messages,
 			preprompt,
@@ -48,7 +48,11 @@ export function endpointTgi(input: z.input<typeof endpointTgiParametersSchema>):
 
 		return textGeneration(
 			{
-				parameters: { ...model.parameters, return_full_text: false },
+				parameters: {
+					...model.parameters,
+					return_full_text: false,
+					...(parameters ? parameters : {}),
+				},
 				model: url,
 				inputs: prompt,
 				accessToken,

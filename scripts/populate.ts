@@ -140,10 +140,12 @@ async function seed() {
 				hideEmojiOnSidebar: faker.datatype.boolean(0.25),
 				ethicsModalAcceptedAt: faker.date.recent({ days: 30 }),
 				activeModel: faker.helpers.arrayElement(modelIds),
+				activeScenario: "default",
 				createdAt: faker.date.recent({ days: 30 }),
 				updatedAt: faker.date.recent({ days: 30 }),
 				customPrompts: {},
 				userInfo: {},
+				scenarios: {},
 				characters: {},
 				assistants: [],
 			};

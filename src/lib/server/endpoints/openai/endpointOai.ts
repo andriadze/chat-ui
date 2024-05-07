@@ -21,73 +21,138 @@ export const endpointOAIParametersSchema = z.object({
 export async function endpointOai(
 	input: z.input<typeof endpointOAIParametersSchema>
 ): Promise<Endpoint> {
-	const { baseURL, apiKey, completion, model, defaultHeaders, defaultQuery } =
-		endpointOAIParametersSchema.parse(input);
-	let OpenAI;
-	try {
-		OpenAI = (await import("openai")).OpenAI;
-	} catch (e) {
-		throw new Error("Failed to import OpenAI", { cause: e });
-	}
+	return async ({ messages, preprompt }) => {
+		let messagesOpenAI = messages.map((message) => ({
+			role: message.from,
+			content: message.content,
+		}));
 
-	const openai = new OpenAI({
-		apiKey: apiKey ?? "sk-",
-		baseURL,
-		defaultHeaders,
-		defaultQuery,
-	});
+		if (messagesOpenAI?.[0]?.role !== "system") {
+			messagesOpenAI = [{ role: "system", content: "" }, ...messagesOpenAI];
+		}
 
-	if (completion === "completions") {
-		return async ({ messages, preprompt, continueMessage }) => {
-			const prompt = await buildPrompt({
-				messages,
-				continueMessage,
-				preprompt,
-				model,
-			});
+		if (messagesOpenAI?.[0]) {
+			messagesOpenAI[0].content = preprompt ?? "";
+		}
 
-			return openAICompletionToTextGenerationStream(
-				await openai.completions.create({
-					model: model.id ?? model.name,
-					prompt,
-					stream: true,
-					max_tokens: model.parameters?.max_new_tokens,
-					stop: model.parameters?.stop,
-					temperature: model.parameters?.temperature,
-					top_p: model.parameters?.top_p,
-					frequency_penalty: model.parameters?.repetition_penalty,
-				})
-			);
+		const rawResponse = await fetch("https://test.llm2.popai.agency/v1/chat/completions", {
+			method: "POST",
+			headers: {
+				Accept: "application/json",
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify({
+				model: "investbrainsorg/popai-adult-13b",
+				messages: messagesOpenAI,
+				frequency_penalty: 1.1,
+				stop: ["\n", "#"],
+			}),
+		});
+		const content = await rawResponse.json();
+		console.log(content?.["choices"]?.[0]?.["message"]);
+
+		return {
+			generated_text: content?.["choices"]?.[0]?.["message"]?.content,
 		};
-	} else if (completion === "chat_completions") {
-		return async ({ messages, preprompt }) => {
-			let messagesOpenAI = messages.map((message) => ({
-				role: message.from,
-				content: message.content,
-			}));
 
-			if (messagesOpenAI?.[0]?.role !== "system") {
-				messagesOpenAI = [{ role: "system", content: "" }, ...messagesOpenAI];
-			}
+		// return openAIChatToTextGenerationStream(
+		// 	await openai.chat.completions.create({
+		// 		// model: model.id ?? model.name,
+		// 		// model: "/repository",
+		// 		model: "investbrainsorg/popai-adult-13b",
+		// 		messages: messagesOpenAI,
+		// 		frequency_penalty: 1.1,
+		// 		stop: ["\n", "#"],
+		// 	})
+		// );
+	};
 
-			if (messagesOpenAI?.[0]) {
-				messagesOpenAI[0].content = preprompt ?? "";
-			}
+	// const { baseURL, apiKey, completion, model, defaultHeaders, defaultQuery } =
+	// 	endpointOAIParametersSchema.parse(input);
+	// let OpenAI;
+	// try {
+	// 	OpenAI = (await import("openai")).OpenAI;
+	// } catch (e) {
+	// 	throw new Error("Failed to import OpenAI", { cause: e });
+	// }
 
-			return openAIChatToTextGenerationStream(
-				await openai.chat.completions.create({
-					model: model.id ?? model.name,
-					messages: messagesOpenAI,
-					stream: true,
-					max_tokens: model.parameters?.max_new_tokens,
-					stop: model.parameters?.stop,
-					temperature: model.parameters?.temperature,
-					top_p: model.parameters?.top_p,
-					frequency_penalty: model.parameters?.repetition_penalty,
-				})
-			);
-		};
-	} else {
-		throw new Error("Invalid completion type");
-	}
+	// const openai = new OpenAI({
+	// 	apiKey: "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",
+	// 	baseURL: "https://test.llm2.popai.agency/v1/chat/completions",
+	// 	defaultHeaders,
+	// 	defaultQuery,
+	// });
+
+	// if (completion === "completions") {
+	// 	console.log("COMPLETIONS");
+	// 	return async ({ messages, preprompt, continueMessage }) => {
+	// 		const prompt = await buildPrompt({
+	// 			messages,
+	// 			continueMessage,
+	// 			preprompt,
+	// 			model,
+	// 		});
+
+	// 		return openAICompletionToTextGenerationStream(
+	// 			await openai.completions.create({
+	// 				// model: model.id ?? model.name,
+	// 				model: "/repository",
+	// 				prompt,
+	// 				stream: true,
+	// 				max_tokens: model.parameters?.max_new_tokens,
+	// 				stop: model.parameters?.stop,
+	// 				temperature: model.parameters?.temperature,
+	// 				top_p: model.parameters?.top_p,
+	// 				frequency_penalty: model.parameters?.repetition_penalty,
+	// 			})
+	// 		);
+	// 	};
+	// } else if (completion === "chat_completions") {
+	// 	console.log("chat completions");
+	// 	return async ({ messages, preprompt }) => {
+	// 		let messagesOpenAI = messages.map((message) => ({
+	// 			role: message.from,
+	// 			content: message.content,
+	// 		}));
+
+	// 		if (messagesOpenAI?.[0]?.role !== "system") {
+	// 			messagesOpenAI = [{ role: "system", content: "" }, ...messagesOpenAI];
+	// 		}
+
+	// 		if (messagesOpenAI?.[0]) {
+	// 			messagesOpenAI[0].content = preprompt ?? "";
+	// 		}
+
+	// 		const rawResponse = await fetch("https://test.llm2.popai.agency/v1/chat/completions", {
+	// 			method: "POST",
+	// 			headers: {
+	// 				Accept: "application/json",
+	// 				"Content-Type": "application/json",
+	// 			},
+	// 			body: JSON.stringify({
+	// 				model: "investbrainsorg/popai-adult-13b",
+	// 				messages: messagesOpenAI,
+	// 				frequency_penalty: 1.1,
+	// 				stop: ["\n", "#"],
+	// 			}),
+	// 		});
+	// 		const content = await rawResponse.json();
+	// 		console.log(content?.["choices"]?.[0]?.["message"]);
+
+	// 		return content?.["choices"]?.[0]?.["message"];
+
+	// 		// return openAIChatToTextGenerationStream(
+	// 		// 	await openai.chat.completions.create({
+	// 		// 		// model: model.id ?? model.name,
+	// 		// 		// model: "/repository",
+	// 		// 		model: "investbrainsorg/popai-adult-13b",
+	// 		// 		messages: messagesOpenAI,
+	// 		// 		frequency_penalty: 1.1,
+	// 		// 		stop: ["\n", "#"],
+	// 		// 	})
+	// 		// );
+	// 	};
+	// } else {
+	// 	throw new Error("Invalid completion type");
+	// }
 }

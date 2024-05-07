@@ -10,8 +10,13 @@
 
 	import UserIcon from "~icons/carbon/user";
 	import type { LayoutData } from "../$types";
+	import Modal from "$lib/components/Modal.svelte";
 
 	export let data: LayoutData;
+
+	let modelName = "";
+
+	let duplicatingScenario: string | boolean = false;
 
 	let previousPage: string = base;
 	let assistantsSection: HTMLHeadingElement;
@@ -29,6 +34,29 @@
 	});
 
 	const settings = useSettingsStore();
+
+	$: if ($settings.activeScenario === undefined) {
+		$settings.activeScenario = "default";
+	}
+
+	$: onDuplicate = () => {
+		if (typeof duplicatingScenario === "string") {
+			console.log(modelName, duplicatingScenario, $settings.scenarios[duplicatingScenario]);
+
+			$settings.scenarios = {
+				...$settings.scenarios,
+				[modelName]: {
+					...$settings.scenarios[duplicatingScenario],
+					userInfo: { ...$settings.scenarios[duplicatingScenario].userInfo },
+					character: { ...$settings.scenarios[duplicatingScenario].character },
+				},
+			};
+		}
+
+		duplicatingScenario = false;
+	};
+
+	$: console.log($settings.activeScenario);
 </script>
 
 <div
@@ -118,13 +146,67 @@
 			</a>
 		{/if}
 
-		<h3 class="pb-3 pl-3 pt-2 text-[.8rem] text-gray-800 sm:pl-1">Characters</h3>
-		<a
-			href="{base}/settings/chars"
-			class="group flex h-10 flex-none items-center gap-2 pl-3 pr-2 text-sm text-gray-500 hover:bg-gray-100 md:rounded-xl"
-			><CarbonArrowUpRight class="mr-1.5 shrink-0 text-xs " />
-			<div class="truncate">default</div>
-		</a>
+		<h3 class="pb-3 pl-3 pt-2 text-[.8rem] text-gray-800 sm:pl-1">Scenarios</h3>
+		{#each Object.keys($settings.scenarios) as scenario}
+			<div
+				class="group flex h-10 flex-none items-center gap-2 pl-3 pr-2 text-sm text-gray-500 md:rounded-xl"
+			>
+				<a
+					class="group flex h-10 flex-1 items-center gap-2 pl-3 pr-2 text-sm text-gray-500 hover:bg-gray-100 md:rounded-xl
+					{scenario === $page.params.scenario ? '!bg-gray-100 !text-gray-800' : ''}"
+					href="{base}/settings/chars/{scenario}"
+					><CarbonArrowUpRight class="mr-1.5 shrink-0 text-xs " />
+					<div class="truncate">{scenario}</div>
+					{#if $settings.activeScenario === scenario}
+						<div
+							class="ml-auto rounded-lg bg-black px-2 py-1.5 text-xs font-semibold leading-none text-white"
+						>
+							Active
+						</div>
+					{/if}
+				</a>
+
+				<button
+					on:click={() => {
+						duplicatingScenario = scenario;
+					}}
+					class="h-10 w-10 hover:bg-gray-100 md:rounded-xl">+</button
+				>
+			</div>
+		{/each}
+		{#if duplicatingScenario}
+			<Modal on:close={() => (duplicatingScenario = false)}>
+				<div class="flex w-full flex-col gap-5 p-6">
+					<div class="flex items-start justify-between text-xl font-semibold text-gray-800">
+						<h2>Create new scenario</h2>
+						<button
+							type="button"
+							class="group"
+							on:click|stopPropagation={() => {
+								duplicatingScenario = false;
+							}}
+						>
+							<CarbonClose class="text-gray-900 group-hover:text-gray-500" />
+						</button>
+					</div>
+					<p class="text-gray-800">
+						NOTE: Renaming scenarios currently not supported, pick name carefully
+					</p>
+					<input
+						type="text"
+						bind:value={modelName}
+						class="rounded border p-2 text-gray-800"
+						placeholder="New model name"
+					/>
+					<button
+						on:click={onDuplicate}
+						class="mt-2 rounded-full px-5 py-2 text-lg font-semibold ring-gray-400 ring-offset-1 transition-all focus-visible:outline-none focus-visible:ring hover:ring"
+					>
+						Duplicate
+					</button>
+				</div>
+			</Modal>
+		{/if}
 
 		<a
 			href="{base}/settings"

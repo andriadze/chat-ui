@@ -45,15 +45,16 @@
 				},
 				body: JSON.stringify({
 					model,
+					parameters: $settings.modelParameters[$settings.activeModel],
 					greeting: buildSystemMessage(
-						$settings.greeting[$settings.activeModel],
-						$settings.characters.default,
-						$settings.userInfo
+						$settings.scenarios[$settings.activeScenario].greeting,
+						$settings.scenarios[$settings.activeScenario].character,
+						$settings.scenarios[$settings.activeScenario].userInfo
 					),
 					preprompt: buildSystemMessage(
-						$settings.customPrompts[$settings.activeModel],
-						$settings.characters.default,
-						$settings.userInfo
+						$settings.scenarios[$settings.activeScenario].customPrompts,
+						$settings.scenarios[$settings.activeScenario].character,
+						$settings.scenarios[$settings.activeScenario].userInfo
 					),
 				}),
 			});

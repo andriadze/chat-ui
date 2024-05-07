@@ -146,12 +146,15 @@ export const load: LayoutServerLoad = async ({ locals, depends }) => {
 			ethicsModalAccepted: !!settings?.ethicsModalAcceptedAt,
 			ethicsModalAcceptedAt: settings?.ethicsModalAcceptedAt ?? null,
 			activeModel: settings?.activeModel ?? DEFAULT_SETTINGS.activeModel,
+			activeScenario: settings?.activeScenario ?? DEFAULT_SETTINGS.activeScenario,
 			hideEmojiOnSidebar: settings?.hideEmojiOnSidebar ?? false,
 			shareConversationsWithModelAuthors:
 				settings?.shareConversationsWithModelAuthors ??
 				DEFAULT_SETTINGS.shareConversationsWithModelAuthors,
 			customPrompts: settings?.customPrompts ?? {},
+			modelParameters: settings?.modelParameters ?? {},
 			greeting: settings?.greeting ?? {},
+			scenarios: settings?.scenarios ?? DEFAULT_SETTINGS.scenarios,
 			characters: settings?.characters ?? DEFAULT_SETTINGS.characters,
 			userInfo: settings?.userInfo ?? DEFAULT_SETTINGS.userInfo,
 			assistants: userAssistants,
